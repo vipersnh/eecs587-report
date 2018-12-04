@@ -1,0 +1,81 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{times}
+
+% numbers option provides compact numerical references in the text. 
+\usepackage[numbers]{natbib}
+\usepackage{multicol}
+\usepackage[bookmarks=true]{hyperref}
+
+\pdfinfo{
+   /Author (Homer Simpson)
+   /Title  (Robots: Our new overlords)
+   /CreationDate (D:20101201120000)
+   /Subject (Robots)
+   /Keywords (Robots;Overlords)
+}
+
+\begin{document}
+
+% paper title
+\title{Template for the Essay Assignment}
+
+\author{\authorblockN{Homer Simpson}
+\authorblockA{Twentieth Century Fox\\
+Springfield, USA\\
+Email: homer@thesimpsons.com}}
+
+
+% avoiding spaces at the end of the author lines is not a problem with
+% conference papers because we don't use \thanks or \IEEEmembership
+
+\maketitle
+
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+You may give an intro about what you're going to talk about.
+
+Sometimes it is useful to itemize different approaches:
+\begin{itemize}
+ \item Method A
+ \item Method B
+ \item Method C
+\end{itemize}
+
+
+\section{Section}
+
+Use as many sections you may find suitable with your preferred title. You may cite a few papers if it's required~\cite{kalman1960new,McGeer01041990}. Feel free to include light math and equations if it helps.
+\begin{equation}
+ E = mc^2
+\end{equation}
+
+
+\subsection{Subsection Heading Here}
+Subsection text here.
+
+\subsubsection{Subsubsection Heading Here}
+Subsubsection text here.
+
+
+
+Linking cited articles will not always be possible, especially for
+older articles. There are also often several versions of papers
+online: authors are free to decide what to use as the link destination
+yet we strongly encourage to link to archival or publisher sites
+(such as IEEE Xplore or Sage Journals).  We encourage all authors to use this feature to
+the extent possible.
+
+\section{Conclusion and Future Directions} 
+\label{sec:conclusion}
+
+The conclusion goes here.
+
+ 
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
+
+

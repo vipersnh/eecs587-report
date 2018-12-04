@@ -1,14 +1,107 @@
-\documentclass{article}
-\usepackage[utf8]{inputenc}
+\documentclass[conference]{IEEEtran}
+\usepackage{times}
 
-\title{eecs587-report}
-\author{vipersnh }
-\date{December 2018}
+% numbers option provides compact numerical references in the text. 
+\usepackage[numbers]{natbib}
+\usepackage{multicol}
+\usepackage[bookmarks=true]{hyperref}
+
+\pdfinfo{
+   /Author (Sharankumar Narayan Huggi)
+   /Title  (Summarization of Simultaneous Localization and Mapping: Issues, Methods and Solutions)
+   /CreationDate (D:20180309174824)
+   /Subject (SLAM)
+   /Keywords (SLAM;Kalman Filters)
+}
 
 \begin{document}
 
+% paper title
+\title{Summarization of Simultaneous Localization and Mapping: Intro, Methods and Solutions}
+
+\author{\authorblockN{Sharankumar Narayan Huggi}
+\authorblockA{Graduate Student - University of Michigan\\
+Ann Arbor Michigan, USA\\
+Email: vipersnh@umich.edu
+}}
+
 \maketitle
 
-\section{Introduction}
+\IEEEpeerreviewmaketitle
+
+\section{Introduction and History of SLAM}
+SLAM stands for Simultaneous Localization and Mapping. It is a process of simultaneously tracking a mobile robot's location placed in an unknown environment, while exploring the unknown environment map, as well as generating the map of the environment. Because of the complexity of the problem, and its immense autonomous nature, a solution to SLAM is often seen as one of the pinnacles of robotics since it would provide any mobile robot completely autonomous.
+\par SLAM can be backtracked to the 1980's when probabilistic methods were being introduced into robotics and artificial intelligence. Kalman filters and its variations were being used to track the system variables of various models. The use of such filtering methods were explored by many, but a paper by Smith Et Al ~\cite{smith_et_al}, showed that estimates of landmarks detected by a mobile robot in unknown environment had very strong correlations. This was a major result for the issue of mapping unknown environment. However, the paper did not address the issue of convergence properties of map nor its steady-state behavior.
+\par A conceptual breakthrough came when it was realized that combining of mapping and localization into a single estimation problem would result in a converged solution. It also proved that they could use those strong correlations to produce convergent solutions and find better solution to the issue of SLAM. Most of this paper is a summarization of ~\cite{slamPaper_1,slamPaper_2}.
+
+\section{Formulation and Structure of SLAM}
+SLAM process can be formulated as a mobile robot trying to simultaneously building a map of the environment as well as using the same map to deduce its own location within the map. Both of these tasks happen concurrently without needing any a priori information about the map nor the location. However, the location estimated by the mobile robot can only be referenced to the map it generates, which is localized. This wouldn't help deduce anything about the location in a global space.
+
+\par The below terms form the core of a SLAM problem and its solution
+\begin{itemize}
+  \item \boldmath{$x_{k}:$} the state vector which contains the location and orientation of the mobile robot
+  \item \boldmath{$u_{k}:$} the control vector applied to the vehicle at time k-1
+  \item \boldmath{$m_{i}:$} a vector describing the location of the i-th landmark
+  \item \boldmath{$z_{ik}:$} an observation taken at i location at time instant k
+  \item \boldmath{$X_{0:k}=\{{x_0,x_1,\cdot\cdot\cdot ,x_k}\}:$} the history of vehicle locations
+  \item \boldmath{$U_{0:k}=\{{u_1,u_2,\cdot\cdot\cdot ,u_k}\}:$} the history of vehicle control inputs
+  \item \boldmath{$m=\{{m_1,m_2,\cdot\cdot\cdot ,m_n}\}:$} the set of all the landmarks
+  \item \boldmath{$Z_{0:k}=\{{z_1,z_2,\cdot\cdot\cdot ,z_k}\}=\{Z_{0:k-1},z_k\}:$} the set of all landmark observations
+\end{itemize}
+
+\section {Probabilistic Methods for solving SLAM}
+The application of probabilistic method in SLAM computes the probability
+\begin{equation}
+\boldmath P(x_k,m|Z_{0:k}, U_{0:k}, x_0)
+\end{equation}
+for every time instant k while simultaneously updating \textbf{m}. This involves two steps which recursively build the map as well as the localization estimate. It uses state vector prediction step using the control inputs, and then uses the observation model to fuse the observation vector \boldmath{$Z_{0:k}$} to build a belief. The map building is formulated as computing the conditional density \boldmath{$P(m|X_{0:k}, Z_{0:k}, U_{0:k})$}. The map \textbf{m} is constructed by fusing observations from using different locations. Similarly, the localization problem can be formulated as computing the probability distribution \boldmath{$P(x_k|Z_{0:k}, U_{0:k}, m)$}.
+
+\section {Solution for SLAM}
+\textbf{EKF--SLAM:} The solutions assume state-space model representation with additive Guassian noise implying the use of extended Kalman filter (EKF) for the SLAM problem solution. EKF-SLAM linearizes the non-linear motion and observations models used for predicting next state and fusing observation vectors, and thus estimating the state-space variables. 
+
+\begin{itemize}
+	\item \textbf{Convergence:} The solution using EKF-SLAM converges the map up-to a point where the individual landmarks of the map covariance moves towards a lower bound as determined by the initial uncertainties in robot motion model and its observation sensors.
+    \item \textbf{Computational Effort:} EKF-SLAM suffers from a quadratic growth in the computation as the number of landmarks increases.
+    \item \textbf{Data Association:} Loop closure and handling of errors in recognition of previously observed landmarks is a particularly hard problem for EKF-SLAM to solve. Simple errors in data-association lead to significant errors in the state estimation results generated by EKF-SLAM.
+    \item \textbf{Nonlinearity:} Since EKF-SLAM is a non-linear version of the Kalman filter, it is inherent that it solves non-linear estimation problem by linearizing the estimation equations. However, EKF-SLAM models can lead to inevitable and sometimes dramatically inconsistent solutions. It is therefore recommended to restructure the physical systems and state models such that they are linear in nature.
+\end{itemize}
+
+\par
+\textbf{Rao--Blackwellized Filter:} It is an essential structure of FastSLAM algorithm implementation. In this, the trajectory is represented by weighted samples and the following map is computed analytically. The key property of FastSLAM which is mainly the reason for its speed is that the map is represented as a set of independent Guassians with linear complexity, rather than a joint covariance with quadratic complexity. The map accompanying each particle is composed of independent Guassian as described by the below equation
+
+\begin{equation}
+\boldmath P(m|X_{0:k}^{(i)}, Z_{0:k}) = \prod_{j = 1}^{M} P(m_j|X_{0:k}^{(i)}, Z_{0:k})
+\end{equation}
+
+and consequently, recursive estimation is performed by particle filtering for the pose states and the EKF for the map states.
+
+\section {Implementation of SLAM}
+A lot of variants of SLAM have come into existence with applications in a wide variety of domains. They span from indoor, outdoor, aerial, sub-sea and many more. Most of these are written in MATLAB, C++ or Java. And many more implementations are available online along with their real-world logged datasets. These resources are immensely useful for researches in the field of probabilistic robotics research and industrial and consumer robotic applications.
+
+\section {Computational Complexity of SLAM implementation}
+SLAM algorithms are inherently complex in their nature as well as their operations. This is due to the nature of the dataset they handle and the results they produce. The operations required for handling nonlinearity, data-association, landmark characterization which are vital for any practical and robust SLAM, require heavy computation power. Thus, surveys indicate the current state of art in SLAM research involve optimizations in three key areas: computational complexity, data association and environment representation.
+
+\section {Solutions for Reducing Complexity}
+Computational efficiency improvement techniques can be classified into two categories as being either optimal or conservative. Optimal algorithms produce results which are same as that of full-SLAM, where as conservative algorithms produce results which are less accurate compared to full-SLAM, however they reduce the computational complexity the most.
+
+\par The below list describes a few methods that can be used individually or in combination to produce the most computationally efficient SLAM implementation.
+
+\begin{itemize}
+	\item \textbf{State Augmentation:} This method reduces complexity during prediction step by reducing the state vector into only the robot pose, and ignoring the set of map landmark locations \textbf{m}.
+    \item \textbf{Partitioned Updates:} This method partitions the sensor information updates only to a small local region, while updating global map at a much lower frequency, and thus reducing the computational complexity.
+    \item \textbf{Sparsification:} This method involves reducing the matrices used for state and covariance by removing/ignoring the elements which are always zero.
+    \item \textbf{Batch Validation:} This method involves batch gating to achieve reliable data association which when sufficiently constrained produces lesser association errors.
+    \item \textbf{Partial Observability and Delayed Mapping:} This method relies on the fact that individual measurements are inaccurate and produce non-Guassian distribution over landmark location, and thus a series of raw observations are accumulated before they are fused, resulting in a delayed fusion.
+\end{itemize}
+    
+\section{Conclusion and Future Directions}
+\label{sec:conclusion}
+The current state of art SLAM research and implementations provide a peek into the future of autonomous robotics and its applications. The solution to SLAM using probabilistic robotics gives a very practical insight into use of Bayesian methods for solving real world problems. While progress has been substantial in most areas of SLAM based implementations and research, the challenges are also myriad. Now the SLAM paradigm has moved to larger problems where robotics can truly contribute. Some of the new challenges involve mapping of a whole city without recourse to global positioning system(GPS) as well as driving hundreds of kilometers under a forest canopy. Progress in the field of computational sciences, technology required for handling more complex operations is also contributing to the SLAM terminology. The future looks really bright with autonomous robots serving humans and the world for a greater cause.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
 
 \end{document}
+
+
+
